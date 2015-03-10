@@ -5,7 +5,9 @@ based on/connected with work conducted on the [python based thredds crawler](htt
 
 Usage:
 In a MATLAB command window type:
-```crawl_thredds```
+```
+crawl_thredds
+```
 
 
 Optional Inputs
