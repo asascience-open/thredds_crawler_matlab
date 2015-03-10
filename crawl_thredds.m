@@ -76,7 +76,7 @@ try
         plot(time, nc_var(:), 'LineWidth', 2)
         datetick('x',29,'keepticks')
         % xticklabel_rotate is a separate function!
-        xticklabel_rotate([],45);
+%         xticklabel_rotate([],45);
         [~, filename] = fileparts(dataurl);
         title_str = strrep(filename, '_', '-');
         title(title_str)
