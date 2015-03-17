@@ -1,6 +1,6 @@
 function crawl_thredds(varargin)
 %--------------------------------------------------------------------------
-% function crawl_frf_thredds
+% function crawl_thredds
 %
 %   Inputs:
 %       url = URL to the thredds data server you'd like to crawl
@@ -51,6 +51,7 @@ for k = 0:allItems.getLength-1
     dataset = thisItem.getAttribute('name');
     dataurl = [url char(dataset)];
     if strcmp(dataurl(end-2:end),ext)
+        disp('-------------------------------------------------------------')
         disp(['Opening ' dataurl '.....'])
         check_nc_file(dataurl)
         disp('-------------------------------------------------------------')
@@ -63,24 +64,36 @@ function check_nc_file(dataurl)
 global DEBUG_PLOTS DOWNLOAD_DATA
 try
     ncid = netcdf.open(dataurl,'NC_NOWRITE');
-    % Read in time
-    time_id = netcdf.inqVarID(ncid, 'time');
-    time = netcdf.getVar(ncid, time_id);
-    time = time/86400 + datenum(1970,1,1);
+    
+    % Get all the variable names
+    [~,nvars] = netcdf.inq(ncid);
+    variable_names = cell(nvars,1);
+    for n = 0:nvars-1
+        variable_names{n+1} = netcdf.inqVar(ncid,n);
+    end
+    
+    % Read in time (if available)
+    if any(ismember(variable_names,'time'))
+        time_id = netcdf.inqVarID(ncid, 'time');
+        time = netcdf.getVar(ncid, time_id);
+        time = time/86400 + datenum(1970,1,1);
 
-    if DEBUG_PLOTS
-        fig = figure();
-        % Now read a variable
-        nc_var_id = netcdf.inqVarID(ncid, 'waveHs');
-        nc_var = netcdf.getVar(ncid, nc_var_id);
-        plot(time, nc_var(:), 'LineWidth', 2)
-        datetick('x',29,'keepticks')
-        % xticklabel_rotate is a separate function!
-%         xticklabel_rotate([],45);
-        [~, filename] = fileparts(dataurl);
-        title_str = strrep(filename, '_', '-');
-        title(title_str)
-%         close(fig)
+        if DEBUG_PLOTS
+            fig = figure();
+            % Now read a variable
+            nc_var_id = netcdf.inqVarID(ncid, 'waveHs');
+            nc_var = netcdf.getVar(ncid, nc_var_id);
+            plot(time, nc_var(:), 'LineWidth', 2)
+            datetick('x',29,'keepticks')
+            % xticklabel_rotate is a separate function!
+    %         xticklabel_rotate([],45);
+            [~, filename] = fileparts(dataurl);
+            title_str = strrep(filename, '_', '-');
+            title(title_str)
+    %         close(fig)
+        end
+    else
+        disp('Could not find variable named time!')
     end
     if DOWNLOAD_DATA
         % Read all the variables and attributes and write a local
