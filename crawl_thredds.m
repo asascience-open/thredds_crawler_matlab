@@ -1,16 +1,27 @@
-function crawl_thredds(varargin)
+function data = crawl_thredds(varargin)
 %--------------------------------------------------------------------------
 % function crawl_thredds
 %
 %   Inputs:
 %       url = URL to the thredds data server you'd like to crawl
 %       extension = extension of data files you want to open (.nc for now)
-%
+%   Outputs:
+%       data = Matlab structure with the following fields:
+%                 id - Dataset ID
+%                 name - Dataset name
+%                 catalog_url - Dataset url
 %--------------------------------------------------------------------------
-global DEBUG_PLOTS DOWNLOAD_DATA
+global DEBUG_PLOTS DOWNLOAD_DATA datasets
 
 DEBUG_PLOTS = false;
 DOWNLOAD_DATA = false;
+
+if ~isfield(datasets,'id')
+    datasets.id = {};
+    datasets.name = {};
+    datasets.metadata = {};
+    datasets.catalog_url = {};
+end
 
 url = 'http://usace.asa.rocks/thredds/dodsC/frfData/oceanography/waves/waverider632/catalog.html';
 ext = '.nc';
@@ -41,7 +52,7 @@ for k = 0:allItems.getLength-1
     href = thisItem.getAttribute('xlink:title');
 %     disp(char(dataset));
     dataurl = [url char(href) '/catalog.html'];
-    crawl_thredds(dataurl)
+    crawl_thredds(dataurl);
 end
 
 % Get the datasets
@@ -55,9 +66,29 @@ for k = 0:allItems.getLength-1
         disp(['Opening ' dataurl '.....'])
         check_nc_file(dataurl)
         disp('-------------------------------------------------------------')
+        dataid = thisItem.getAttribute('ID');
+        leaf_url = [url 'catalog.xml?dataset=' char(dataid)];
+        datasets = leaf_dataset(datasets, leaf_url);
+        
     else
         disp(['skipping ' char(dataset)]);
     end
+end
+
+data = datasets;
+
+
+function datasets = leaf_dataset(datasets, leaf_url)
+
+tree = xmlread(leaf_url);
+allItems = tree.getElementsByTagName('dataset');
+for k = 0:allItems.getLength-1
+    thisItem = allItems.item(k);
+    datasets.name{end+1} = char(thisItem.getAttribute('name'));
+    datasets.id{end+1} = char(thisItem.getAttribute('ID'));
+%     datasets{end+1}.metadata = 
+    C = strsplit(leaf_url,'?');
+    datasets.catalog_url{end+1} = C{1};
 end
 
 function check_nc_file(dataurl)
