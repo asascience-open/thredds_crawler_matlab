@@ -1,27 +1,28 @@
-# thredds_crawler_matlab
-A simple Matlab crawler/parser for THREDDS catalogs
+# THREDDS Crawler for Matlab
+A simple Matlab based THREDDS (TDS) catalog crawler. Parses TDS catalog records in to a matlab data structure
 
-based on/connected with work conducted on the [python based thredds crawler](https://github.com/asascience-open/thredds_crawler)
+Connected with work conducted on the [python based thredds crawler](https://github.com/asascience-open/thredds_crawler)
 
-Usage:
+### Usage:
 In a MATLAB command window type:
+
 ```
 datasets = crawl_thredds;
 ```
 
-Optional Inputs
+### Optional Inputs
 
 * url = URL to the thredds data server you'd like to crawl (FRF waves by default)
 * extension = extension of data files you want to open (.nc by default)
 
-Output
+### Output
 
 * data = Matlab structure the following fields:
   * id - Dataset ID
   * name - Dataset name
   * catalog_url - Dataset url
 
-Coming Soon:
+### Coming Soon:
 * Logging
 * Downloading datasets
 * Harvesting metadata
